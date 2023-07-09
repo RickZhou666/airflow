@@ -92,6 +92,29 @@ $ docker-compose ps
 ```
 - ![imgs](./imgs/Xnip2023-07-09_11-36-21.jpg)
 
+
 <br><br><br>
 
 ## 9. docker compose
+
+
+<br><br><br><br><br><br>
+
+# 2. The important views of Airflow UI
+
+1. Grid view
+    - ![imgs](./imgs/Xnip2023-07-09_17-59-25.jpg)
+
+
+2. Graph view
+    - ![imgs](./imgs/Xnip2023-07-09_18-01-04.jpg)
+    
+3. Landing time
+    - ![imgs](./imgs/Xnip2023-07-09_18-02-09.jpg)
+    
+
+4. Gantt View
+    - paralize
+
+5. Code view
+    - ![imgs](./imgs/Xnip2023-07-09_19-10-58.jpg)
