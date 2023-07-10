@@ -373,3 +373,152 @@ with DAG('user_processing',
          catchup=True) as dag:
 ```
 - ![imgs](./imgs/Xnip2023-07-09_22-46-10.jpg)
+
+<br><br><br><br><br><br>
+
+# 4. the new way of scheduling DAGs
+
+## 4.1 why u need the feature?
+1. might be some issue without notifying 2nd task
+    - ![imgs](./imgs/Xnip2023-07-10_10-14-44.jpg)
+
+2. use trigger to invoke 2nd task
+    - ![imgs](./imgs/Xnip2023-07-10_10-15-29.jpg)
+3. micro-pipeline
+    - ![imgs](./imgs/Xnip2023-07-10_10-15-29.jpg)
+
+<br><br><br>
+
+## 4.2 what is dataset?
+1. URI - universe resource identifier
+    - unique identifier of your data
+    - path to your data
+    - must composed of only ASCII characters
+    - the URI schema cannot be airflow
+    - case sensetive
+
+2. e.g.
+```python
+from airflow import Dataset
+# valid datasets:
+schemeless = Dataset("/path/file.txt")
+csv_file = Dataset("file.csv")
+
+# invalid datasets:
+schemeless = Dataset("airflow://file.txt")
+csv_file = Dataset("file_dataset")
+```
+
+3. with extra params
+```python
+from airflow import Dataset
+
+my_file = Dataset(
+    "s3://dataset/file.csv",
+    extra={'owner': 'james'},
+)
+
+```
+
+<br><br><br>
+
+## 4.3 Adios schedule_interval
+```python
+# Before
+with DAG(scheduler_interval='@daily')
+with DAG(timetable=MyTimeTable)
+
+# Since 2.4
+with DAG(scheduler=...)
+
+```
+
+<br><br><br>
+
+## 4.4 Create Producer DAG
+```python
+from airflow import DAG
+from airflow.datasets import Dataset
+from airflow.decorators import task
+
+from datetime import datetime
+
+my_file = Dataset("/tmp/my_file.txt")
+
+with DAG(
+    dag_id ="producer",
+    schedule="@daily",
+    start_date=datetime(2022, 1, 1),
+    catchup=False
+):
+    @task(outlets=[my_file])
+    def update_dataset():
+        with open(my_file.uri, "a+") as f:
+            f.write("producer update")
+    
+    update_dataset()
+```
+
+<br><br><br>
+
+## 4.5 Create Consumer DAG
+```python
+from airflow import DAG
+from airflow.datasets import Dataset
+from airflow.decorators import task
+
+from datetime import datetime
+
+
+my_file = Dataset("/tmp/my_file.txt")
+
+with DAG(
+    dag_id="consumer",
+    # as soon as 'my_file' is updated, it will trigger this job
+    schedule=[my_file],
+    start_date=datetime(2022, 1, 1),
+    catchup=False
+):
+    @task
+    def read_dataset():
+        with open(my_file.uri, "r") as f:
+            print(f.read())
+            
+    
+    read_dataset()
+```
+
+- ![imgs](./imgs/Xnip2023-07-10_11-51-19.jpg)
+
+
+<br><br><br>
+
+## 4.6 Track your Datasets with new view!
+
+1. Producer
+    - ![imgs](./imgs/Xnip2023-07-10_13-01-23.jpg)
+
+2. Consumer
+    - ![imgs](./imgs/Xnip2023-07-10_13-00-37.jpg)
+
+<br><br><br>
+
+## 4.7 wait for many datasets
+1. Datasets
+    - ![imgs](./imgs/Xnip2023-07-10_13-04-36.jpg)
+2. Producer
+    - ![imgs](./imgs/Xnip2023-07-10_13-04-58.jpg)
+3. Consumer
+    - ![imgs](./imgs/Xnip2023-07-10_13-05-10.jpg)
+
+
+
+
+
+
+
+
+
+
+
+
